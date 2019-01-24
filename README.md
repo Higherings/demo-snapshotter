@@ -13,8 +13,9 @@ demo_shotter uses the configuration file created by the AWS CLI:
 
 ## Running
 
-`pipenv run python shottter/shotter.py <command> <--proyecto=PROYECTO>`
+`pipenv run python shottter/shotter.py <command> <subcommand> <--proyecto=PROYECTO>`
 
-*command* is list, start or stop
+*command* is instances, volumes or snapshots
+*subcommand* - dependson command
 *proyecto* is optional
 

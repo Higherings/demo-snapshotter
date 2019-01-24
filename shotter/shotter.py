@@ -2,7 +2,7 @@ import boto3
 import click    #module to work with parameters
 #import sys #for arguments as input
 
-session = boto3.Session(profile_name='demo_python')
+session = boto3.Session(profile_name='demo_python') #profile_name debe ser igual a --profile cuando se corre aws config
 ec2 = session.resource('ec2')
 
 def filter_instances(proyecto):
@@ -14,11 +14,64 @@ def filter_instances(proyecto):
         instances = ec2.instances.all()
     return instances
 
-@click.group()
+@click.group() #Will group volumes and instances groups
+def cli():
+    """Shotter manages snapshots"""
+
+@cli.group('snapshots')
+def snapshots():
+    """Commands for snapshots"""
+
+@snapshots.command('list')
+@click.option('--proyecto', default=None, help="Only snapshots for project (tag proyecto:<name>)")
+def list_snapshots(proyecto):
+    "List Snapshots"    #doc string
+    instances = filter_instances(proyecto)
+
+    for i in instances:
+        for v in i.volumes.all():
+            for s in v.snapshots.all():
+                print(", ".join((s.id, v.id, i.id,s.state,s.progress, s.start_time.strftime("%c"))))
+    return
+
+
+@cli.group('volumes')
+def volumes():
+    """Commands for volumes"""
+
+@volumes.command('list')
+@click.option('--proyecto', default=None, help="Only volumes for project (tag proyecto:<name>)")
+def list_volumes(proyecto):
+    "List Volumes"    #doc string
+    instances = filter_instances(proyecto)
+
+    for i in instances:
+        for v in i.volumes.all():
+            print(", ".join((v.id, i.id,v.state,str(v.size)+"GiB", v.encrypted and "Encrypted" or "Not Encrypted")))
+    
+    return
+
+@cli.group('instances')  #here we define a group to work with commands for instances
 def instances():
     """Commands for instances"""
 
 #@click.command()    #wrapper
+
+@instances.command('snapshot', help="Create a snaphot of all volumes")
+@click.option('--proyecto', default=None, help="Only instances for project (tag proyecto:<name>)")
+def create_snapshots(proyecto):
+    "Create Snapshots"    #doc string
+    instances = filter_instances(proyecto)
+    for i in instances:
+        #i.stop()
+        for v in i.volumes.all():
+            print("Creating snapshot of {0}".format(v.id))
+            v.create_snapshot(Description="Created by Shotter Snaps")
+    return
+
+
+
+
 @instances.command('list')
 @click.option('--proyecto', default=None, help="Only instances for project (tag proyecto:<name>)")
 def list_instances(proyecto):
@@ -53,5 +106,5 @@ def stop_instances(proyecto):
 
 if __name__ == '__main__':
     #print(sys.argv) #sys.argv will hace a list of strings with the parameters
-    instances()
+  cli()
 
