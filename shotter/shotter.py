@@ -1,6 +1,7 @@
 ##HOW-TO run: pipenv run python shotter/shotter.py instances snapshot --proyecto=python_demo
 
 import boto3
+import botocore
 import click    #module to work with parameters
 #import sys #for arguments as input
 
@@ -99,7 +100,11 @@ def stop_instances(proyecto):
     instances = filter_instances(proyecto)
     for i in instances:
         print("Stopping {0}...".format(i.id))
-        i.stop()
+        try:
+            i.stop()
+        except botocore.exceptions.ClientError as e:
+            print("Could not stop {0} ".format(i.id)+str(e))
+            continue
     return
 
 @instances.command('start')
@@ -109,7 +114,12 @@ def stop_instances(proyecto):
     instances = filter_instances(proyecto)
     for i in instances:
         print("Starting {0}...".format(i.id))
-        i.start()
+        try:
+            i.start()
+        except botocore.exceptions.ClientError as e:
+            print("Could not start {0} ".format(i.id)+str(e))
+            continue
+
     return
 
 
