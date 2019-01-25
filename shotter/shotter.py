@@ -18,7 +18,7 @@ def filter_instances(proyecto):
     return instances
 
 def has_pending_snapshot(volumen):
-    snapshots = list(volume.snapshots.all())
+    snapshots = list(volumen.snapshots.all())
     return snapshots and snapshots[0].state == 'pending'
 
 @click.group() #Will group volumes and instances groups
@@ -121,7 +121,7 @@ def stop_instances(proyecto):
 
 @instances.command('start')
 @click.option('--proyecto', default=None, help="Only instances for project (tag proyecto:<name>)")
-def stop_instances(proyecto):
+def start_instances(proyecto):
     "Start Instances"
     instances = filter_instances(proyecto)
     for i in instances:
